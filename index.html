@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SHA-256 // Математика хаоса — инфографика</title>
+<title>SHA-256 // Машина-преобразователь</title>
 <style>
-/* ── TOKENS ─────────────────────────────────────────────────────────── */
 :root {
   --bg:       #f2f3f5;
   --surface:  #ffffff;
@@ -13,648 +12,489 @@
   --text:     #1a1a1a;
   --muted:    #6b6e72;
   --orange:   #e8890b;
-  --orange-lo:rgba(232,137,11,.10);
+  --orange-lo:rgba(232,137,11,.11);
   --blue:     #5b9bd5;
   --green:    #5d8a50;
-  --red:      #c0392b;
-  --red-lo:   rgba(192,57,43,.08);
+  --red:      #c97c34;
   --console:  #1c1c1e;
   --con-fg:   #a9b7c6;
   --con-dim:  #50555e;
 }
-@media (prefers-color-scheme:dark) {
-  :root {
-    --bg:#18191b; --surface:#222426; --border:#36383b;
-    --text:#d4d4d4; --muted:#7a7d82; --green:#6aab73;
-    --console:#0d0e10; --con-dim:#42464f;
-  }
-}
-:root[data-theme=dark]  { --bg:#18191b; --surface:#222426; --border:#36383b; --text:#d4d4d4; --muted:#7a7d82; --green:#6aab73; --console:#0d0e10; --con-dim:#42464f; }
-:root[data-theme=light] { --bg:#f2f3f5; --surface:#ffffff; --border:#d6d8da; --text:#1a1a1a; --muted:#6b6e72; --green:#5d8a50; --console:#1c1c1e; --con-dim:#50555e; }
+@media(prefers-color-scheme:dark){:root{
+  --bg:#18191b;--surface:#222426;--border:#36383b;
+  --text:#d4d4d4;--muted:#7a7d82;--green:#6aab73;
+  --console:#0d0e10;--con-dim:#42464f;
+}}
+:root[data-theme=dark]{--bg:#18191b;--surface:#222426;--border:#36383b;--text:#d4d4d4;--muted:#7a7d82;--green:#6aab73;--console:#0d0e10;--con-dim:#42464f;}
+:root[data-theme=light]{--bg:#f2f3f5;--surface:#ffffff;--border:#d6d8da;--text:#1a1a1a;--muted:#6b6e72;--green:#5d8a50;--console:#1c1c1e;--con-dim:#50555e;}
 
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
-
-body {
-  font-family: 'Cascadia Code','JetBrains Mono','Fira Mono',Consolas,Monaco,monospace;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.55;
-  padding-bottom: 36px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Cascadia Code','JetBrains Mono','Fira Mono',Consolas,Monaco,monospace;
+  background:var(--bg); color:var(--text);
+  font-size:13px; line-height:1.5; padding-bottom:32px;
 }
 
-/* ── TOOLBAR ─────────────────────────────────────────────────────────── */
-.toolbar {
-  background: var(--console);
-  border-bottom: 2px solid var(--orange);
-  padding: 7px 16px;
-  display: flex; align-items: center; gap: 10px;
-  position: sticky; top: 0; z-index: 20;
+/* ── TOOLBAR ── */
+.toolbar{
+  background:var(--console); border-bottom:2px solid var(--orange);
+  padding:8px 16px; display:flex; align-items:center; gap:10px;
+  position:sticky; top:0; z-index:20;
 }
-.tb-dot { width:10px; height:10px; border-radius:50%; background:var(--orange); flex-shrink:0 }
-.tb-name { font-size:12px; letter-spacing:.1em; color:var(--con-fg) }
-.tb-name strong { color:var(--orange) }
-.tb-tag { margin-left:auto; font-size:10px; letter-spacing:.09em; color:var(--con-dim); border:1px solid var(--con-dim); padding:1px 8px }
+.tb-pip{width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0}
+.tb-name{font-size:12px;letter-spacing:.1em;color:var(--con-fg)}
+.tb-name strong{color:var(--orange)}
+.tb-tag{margin-left:auto;font-size:10px;letter-spacing:.09em;color:var(--con-dim);border:1px solid var(--con-dim);padding:1px 8px}
 
-/* ── PAGE ────────────────────────────────────────────────────────────── */
-.page { max-width:820px; margin:0 auto; padding:18px 16px 0; display:flex; flex-direction:column; gap:20px }
+/* ── WRAP ── */
+.wrap{max-width:700px;margin:0 auto;padding:16px 16px 0;display:flex;flex-direction:column;gap:12px}
 
-.eyebrow { font-size:10px; letter-spacing:.14em; color:var(--orange); font-weight:600 }
+/* ── INPUT ── */
+.inp-panel{background:var(--surface);border:1px solid var(--border)}
+.inp-eyebrow{font-size:10px;letter-spacing:.12em;color:var(--orange);padding:7px 12px 0}
+.inp-inner{position:relative;padding:5px 12px 8px}
+textarea{
+  width:100%;font-family:inherit;font-size:13px;
+  background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:8px 54px 8px 10px;resize:none;height:66px;outline:none;
+  transition:border-color .15s;
+}
+textarea:focus{border-color:var(--orange)}
+textarea::placeholder{color:var(--muted);opacity:.55}
+.cc{
+  position:absolute;right:16px;bottom:13px;
+  font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;transition:color .2s;
+}
+.cc.warn{color:var(--orange)}
 
-/* ────────────────────────────────────────────────────────────────────── */
-/* SECTION 1 — MACHINE + AVALANCHE                                       */
-/* ────────────────────────────────────────────────────────────────────── */
-.machine-console {
-  background: var(--console);
-  border-left: 3px solid var(--orange);
-  padding: 14px;
-  display: flex; flex-direction: column; gap: 10px;
+/* ── CONSOLE OUTPUT ── */
+.console{
+  background:var(--console);border-left:3px solid var(--orange);
+  padding:12px 14px 14px;min-height:90px;
 }
+.con-prompt{color:var(--green)}
+.con-fn{color:var(--con-fg)}
+.con-str{color:var(--green)}
+.con-paren{color:var(--con-dim)}
+.dump{margin-top:10px}
+.dump-ruler{
+  display:flex;font-size:9px;color:var(--con-dim);
+  font-variant-numeric:tabular-nums;margin-bottom:1px;user-select:none;
+}
+.dump-ruler span{display:inline-block;width:1ch;text-align:center}
+.dump-row{display:flex;font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.hc{display:inline-block;width:1ch;color:var(--con-fg);transition:color .3s,text-shadow .3s}
+.hc.lit{color:var(--orange);text-shadow:0 0 12px rgba(232,137,11,.65)}
+.ava{margin-top:8px;font-size:11px;color:var(--con-dim)}
+.ava strong{color:var(--orange)}
+.con-empty{color:var(--con-dim);font-style:italic;font-size:12px}
+@media(prefers-reduced-motion:reduce){.hc{transition:none}}
 
-.m-row {
-  display: grid;
-  grid-template-columns: minmax(160px,210px) 20px 72px 20px 1fr;
-  align-items: center;
-  gap: 6px;
-}
-@media (max-width:560px) {
-  .m-row { grid-template-columns: 1fr; gap: 4px }
-  .m-arrow { display: none }
-}
+/* ── SEPARATOR ── */
+.sep{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--border)}
 
-.m-input { color:var(--green); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-.m-input .diff { color:var(--orange); font-weight:700 }
-.m-arrow { color:var(--con-dim); text-align:center; font-size:16px }
-.m-box {
-  background: var(--orange); color:#fff;
-  font-size:9px; font-weight:700; letter-spacing:.06em;
-  text-align:center; padding:4px 2px;
+/* ── STEP CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.card-hdr{
+  display:flex;align-items:center;gap:10px;padding:7px 12px;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;transition:background .12s;
 }
-.m-hash {
-  font-size:11px; font-variant-numeric:tabular-nums;
-  letter-spacing:.02em; word-break:break-all; line-height:1.4;
+.card-hdr:hover{background:var(--border)}
+.card-hdr:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+.card-n{
+  width:20px;height:20px;background:var(--orange);color:#fff;
+  font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.hc-same    { color:var(--con-fg) }
-.hc-changed { color:var(--orange); text-shadow:0 0 8px rgba(232,137,11,.55) }
+.card-ttl{font-size:11px;letter-spacing:.07em;color:var(--text)}
+.card-chev{margin-left:auto;font-size:9px;color:var(--muted);transition:transform .18s;display:inline-block}
+.card-chev.open{transform:rotate(90deg)}
+.card-body{padding:12px;display:none}
+.card-body.open{display:block}
+.card-desc{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.65}
+.card-desc em{color:var(--orange);font-style:normal}
 
-.m-sep { height:1px; background:var(--con-dim); opacity:.25 }
+/* ── BYTES ── */
+.brow{display:flex;flex-wrap:wrap;gap:3px}
+.bt{
+  font-size:11px;padding:2px 4px;min-width:24px;
+  text-align:center;font-weight:600;
+  font-variant-numeric:tabular-nums;border-radius:2px;
+}
+.bt-m{background:rgba(91,155,213,.15);color:var(--blue)}
+.bt-p{background:rgba(232,137,11,.18);color:var(--orange)}
+.bt-z{color:var(--con-dim);border:1px solid var(--border)}
+.bt-l{background:rgba(201,124,52,.15);color:var(--red)}
 
-.m-stat { font-size:11px; color:var(--con-dim) }
-.m-stat strong { color:var(--orange) }
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.leg-d{width:8px;height:8px;border-radius:1px}
 
-/* SAC callout */
-.sac-box {
-  background: var(--orange-lo);
-  border-left: 3px solid var(--orange);
-  padding: 9px 12px;
-  font-size:11px; color:var(--text);
-}
-.sac-label { font-size:10px; letter-spacing:.1em; color:var(--orange); margin-bottom:4px }
-.sac-formula { color:var(--blue); font-size:13px; margin:4px 0 }
-
-/* Try-me */
-.tryme {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 10px 12px;
-}
-.tryme-label { font-size:10px; letter-spacing:.1em; color:var(--muted); margin-bottom:6px }
-.tryme input {
-  width:100%; font-family:inherit; font-size:12px;
-  background:var(--bg); border:1px solid var(--border);
-  color:var(--text); padding:6px 10px; outline:none;
-  transition: border-color .15s;
-}
-.tryme input:focus { border-color:var(--orange) }
-.tryme-hash {
-  margin-top:7px; font-size:12px; font-variant-numeric:tabular-nums;
-  letter-spacing:.02em; word-break:break-all; color:var(--blue);
-  min-height:17px;
-}
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* SECTION 2 — PIGEONHOLE                                                */
-/* ────────────────────────────────────────────────────────────────────── */
-.pigeon-wrap {
-  background:var(--surface); border:1px solid var(--border);
-  padding:14px; display:flex; flex-direction:column; gap:12px;
-}
-
-.formula-display {
-  text-align:center; font-size:15px; color:var(--blue);
-  letter-spacing:.06em; padding:8px;
-  border:1px solid var(--border); background:var(--bg);
-}
-
-.pigeon-grid {
-  display: grid;
-  grid-template-columns: 1fr 48px 1fr;
-  gap: 10px;
-  align-items: center;
-}
-@media (max-width:500px) {
-  .pigeon-grid { grid-template-columns: 1fr; }
-  .pi-fn { transform:rotate(90deg) }
+.notice{
+  font-size:11px;border-left:3px solid var(--orange);
+  background:var(--orange-lo);padding:5px 10px;color:var(--text);margin-bottom:10px;
 }
 
-.pi-col-label { font-size:10px; letter-spacing:.08em; color:var(--muted); margin-bottom:7px }
-.pi-col-label em { font-style:normal; color:var(--orange) }
-
-.pi-items { display:flex; flex-direction:column; gap:3px }
-.pi-item {
-  background:var(--bg); border:1px solid var(--border);
-  padding:3px 8px; font-size:11px; color:var(--text);
+/* ── CONVEYOR (step 3) ── */
+.conveyor{overflow-x:auto;padding:4px 0}
+.chain{display:flex;align-items:center;min-width:max-content;gap:0}
+.c-iv{
+  background:var(--con-dim);color:#fff;
+  font-size:10px;font-weight:700;letter-spacing:.04em;
+  padding:8px 10px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
 }
-.pi-inf { color:var(--muted); font-size:13px; padding:4px 8px }
+.c-iv small{font-size:8px;opacity:.7;font-weight:400}
+.c-arr{color:var(--muted);padding:0 5px;font-size:15px;flex-shrink:0}
+.c-f{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.c-f-box{
+  background:var(--orange);color:#fff;
+  font-size:13px;font-weight:700;padding:7px 18px;
+}
+.c-f-lbl{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.03em}
+.c-farsh{
+  background:var(--surface);border:1px solid var(--border);
+  font-size:10px;color:var(--blue);font-weight:600;
+  padding:6px 9px;flex-shrink:0;font-variant-numeric:tabular-nums;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+.c-farsh small{font-size:8px;color:var(--muted);font-weight:400}
+.c-dots{color:var(--muted);font-size:18px;padding:0 8px;flex-shrink:0}
+.c-hash-box{
+  background:var(--orange);color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.05em;padding:8px 14px;flex-shrink:0;
+}
 
-.pi-fn { font-size:22px; font-weight:700; color:var(--orange); text-align:center }
-
-.pi-hash {
-  background:var(--bg); border:1px solid var(--border);
-  padding:3px 8px; font-size:11px; color:var(--blue);
+.chain-formulas{
+  margin-top:10px;font-size:11px;color:var(--blue);
   font-variant-numeric:tabular-nums;
+  border-left:2px solid var(--orange);padding-left:10px;
+  display:flex;flex-direction:column;gap:2px;
 }
-.pi-hash.coll {
-  color:var(--orange); background:var(--orange-lo);
-  border-color:var(--orange); font-weight:600;
-}
+.chain-formulas .last{color:var(--orange);font-weight:700}
 
-.pi-size { font-size:10px; color:var(--muted); margin-top:5px }
+.f-inside{
+  margin-top:8px;padding:6px 10px;
+  background:var(--bg);border-left:2px solid var(--con-dim);
+  font-size:10px;color:var(--muted);
+}
+.f-inside strong{color:var(--text)}
 
-.coll-box {
-  background:var(--orange-lo); border:1px solid var(--orange);
-  padding:10px 14px; text-align:center;
-}
-.coll-formula { font-size:14px; color:var(--blue); margin-bottom:4px }
-.coll-note { font-size:11px; color:var(--muted) }
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* SECTION 3 — THREE PROPERTIES                                          */
-/* ────────────────────────────────────────────────────────────────────── */
-.three-grid {
-  display:grid;
-  grid-template-columns: repeat(3,1fr);
-  gap:10px;
-}
-@media (max-width:600px) { .three-grid { grid-template-columns:1fr } }
-
-.prop-card {
-  background:var(--surface); border:1px solid var(--border);
-  padding:12px; display:flex; flex-direction:column; gap:7px;
-}
-.prop-n { font-size:10px; letter-spacing:.06em; color:var(--orange); font-weight:700 }
-.prop-title { font-size:11px; font-weight:700; color:var(--text); letter-spacing:.04em }
-.prop-sub { font-size:10px; color:var(--muted); font-style:italic }
-
-.prop-formula {
-  background:var(--bg); border:1px solid var(--border);
-  padding:7px 10px; font-size:11px; color:var(--blue);
-  text-align:center; font-variant-numeric:tabular-nums;
-}
-.prop-impossible {
-  display:flex; align-items:center; justify-content:center; gap:6px;
-  font-size:10px; font-weight:700; letter-spacing:.06em;
-  color:var(--red);
-  padding:3px 0;
-  border-bottom:2px solid var(--red);
-}
-
-.prop-desc { font-size:10px; color:var(--muted); line-height:1.65 }
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* SECTION 4 — MERKLE-DAMGÅRD                                            */
-/* ────────────────────────────────────────────────────────────────────── */
-.md-steps { display:flex; flex-direction:column; gap:8px }
-
-.md-step {
-  display:grid; grid-template-columns:36px 1fr; gap:12px;
-  background:var(--surface); border:1px solid var(--border); padding:12px;
-}
-
-.md-n {
-  width:26px; height:26px; background:var(--orange);
-  color:#fff; font-size:11px; font-weight:700;
-  display:flex; align-items:center; justify-content:center;
-  align-self: flex-start; flex-shrink:0;
-}
-.md-title { font-size:11px; font-weight:700; letter-spacing:.05em; color:var(--text); margin-bottom:8px }
-
-/* Padding visual */
-.pad-vis { display:flex; gap:2px; overflow-x:auto }
-.pad-seg {
-  padding:6px 8px; font-size:10px; text-align:center;
-  white-space:nowrap; flex-shrink:0;
-}
-.pad-data { background:rgba(91,155,213,.14); color:var(--blue); border:1px solid rgba(91,155,213,.4); flex:3 }
-.pad-80   { background:var(--orange-lo); color:var(--orange); border:1px solid var(--orange) }
-.pad-zero { background:var(--bg); color:var(--muted); border:1px dashed var(--border); flex:2 }
-.pad-len  { background:rgba(192,57,43,.1); color:var(--red); border:1px solid rgba(192,57,43,.4) }
-
-.pad-legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px }
-.pl { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--muted) }
-.pl-dot { width:8px; height:8px; border-radius:1px }
-
-/* Blocks row */
-.blks-row { display:flex; align-items:center; gap:5px; overflow-x:auto; padding:3px 0 }
-.blk {
-  background:var(--bg); border:1px solid var(--border);
-  padding:6px 10px; text-align:center;
-  font-size:11px; font-weight:600; color:var(--text);
-  flex-shrink:0; display:flex; flex-direction:column; gap:1px;
-}
-.blk small { font-size:9px; color:var(--muted); font-weight:400 }
-.blk-dots { color:var(--muted); font-size:18px; align-self:center; flex-shrink:0; padding:0 4px }
-
-/* Chain pipeline */
-.chain-outer { overflow-x:auto; padding:6px 0 }
-.chain {
-  display:flex; align-items:center; gap:0;
-  min-width:max-content;
-}
-
-.c-iv {
-  background:var(--con-dim); color:#fff;
-  font-size:10px; font-weight:700; letter-spacing:.04em;
-  padding:7px 10px; flex-shrink:0;
-}
-.c-arr { color:var(--muted); padding:0 5px; font-size:15px; flex-shrink:0; align-self:center }
-.c-f-wrap { display:flex; flex-direction:column; align-items:center; flex-shrink:0 }
-.c-f-box {
-  background:var(--orange); color:#fff;
-  font-size:13px; font-weight:700;
-  padding:6px 16px;
-}
-.c-f-in { font-size:9px; color:var(--muted); margin-top:2px; letter-spacing:.03em }
-.c-state {
-  background:var(--surface); border:1px solid var(--border);
-  font-size:10px; color:var(--blue); font-weight:600;
-  padding:6px 9px; flex-shrink:0; align-self:center;
-  font-variant-numeric:tabular-nums;
-}
-.c-dots { color:var(--muted); font-size:18px; padding:0 10px; flex-shrink:0; align-self:center }
-.c-hash {
-  background:var(--orange); color:#fff;
-  font-size:12px; font-weight:700; letter-spacing:.06em;
-  padding:7px 16px; flex-shrink:0;
-}
-
-.chain-formulas {
-  margin-top:10px; display:flex; flex-direction:column; gap:2px;
-  font-size:11px; color:var(--blue); font-variant-numeric:tabular-nums;
-  border-left:2px solid var(--orange); padding-left:10px;
-}
-.chain-formulas .final { color:var(--orange); font-weight:700 }
-
-.f-inside {
-  margin-top:9px; padding:6px 10px;
-  background:var(--bg); border-left:2px solid var(--con-dim);
-  font-size:10px; color:var(--muted);
-}
-.f-inside strong { color:var(--text) }
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* SECTION 5 — APPLICATIONS                                              */
-/* ────────────────────────────────────────────────────────────────────── */
-.apps-grid {
-  display:grid;
-  grid-template-columns: repeat(2,1fr);
-  gap:10px;
-}
-@media (max-width:480px) { .apps-grid { grid-template-columns:1fr } }
-
-.app-card {
-  background:var(--surface); border:1px solid var(--border);
-  padding:12px; display:flex; flex-direction:column; gap:7px;
-}
-.app-title { font-size:11px; font-weight:700; letter-spacing:.05em; color:var(--text) }
-.app-formula {
-  background:var(--bg); border:1px solid var(--border);
-  padding:4px 9px; font-size:11px; color:var(--blue);
-  font-variant-numeric:tabular-nums; overflow-x:auto; white-space:nowrap;
-}
-.app-note { font-size:10px; color:var(--muted); line-height:1.6 }
-
-.tag {
-  display:inline-block; font-size:9px; padding:1px 5px;
-  font-weight:700; letter-spacing:.04em;
-}
-.tag-b { background:rgba(91,155,213,.14); color:var(--blue) }
-.tag-o { background:var(--orange-lo); color:var(--orange) }
-.tag-g { background:rgba(93,138,80,.14); color:var(--green) }
-
-/* ── STATUS BAR ──────────────────────────────────────────────────────── */
-.statusbar {
-  background:var(--orange); color:#fff;
-  font-size:10px; letter-spacing:.08em;
-  padding:2px 16px;
-  position:sticky; bottom:0;
-  margin-top:20px;
+/* ── STATUS BAR ── */
+.statusbar{
+  background:var(--orange);color:#fff;
+  font-size:10px;letter-spacing:.08em;
+  padding:2px 16px;display:flex;gap:20px;
+  position:sticky;bottom:0;margin-top:16px;flex-wrap:wrap;
 }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <div class="tb-dot"></div>
-  <span class="tb-name"><strong>SHA-256</strong> // МАТЕМАТИКА ХАОСА — ХЭШ-ФУНКЦИИ</span>
-  <span class="tb-tag">ИНФОГРАФИКА</span>
+  <div class="tb-pip"></div>
+  <div class="tb-name"><strong>SHA-256</strong> // МАШИНА-ПРЕОБРАЗОВАТЕЛЬ</div>
+  <div class="tb-tag">ВВЕДИ ТЕКСТ</div>
 </div>
 
-<div class="page">
+<div class="wrap">
 
-  <!-- ══ 1. MACHINE + AVALANCHE ══════════════════════════════════════ -->
-  <div>
-    <div class="eyebrow" style="margin-bottom:8px">// 1. МАШИНА-ПРЕОБРАЗОВАТЕЛЬ</div>
-
-    <div class="machine-console">
-      <div class="m-row">
-        <div class="m-input">"Привет, мир<span class="diff">!</span>"</div>
-        <div class="m-arrow">→</div>
-        <div class="m-box">SHA&#8209;256</div>
-        <div class="m-arrow">→</div>
-        <div class="m-hash" id="h1"><span style="color:var(--con-dim)">вычисляю…</span></div>
-      </div>
-      <div class="m-row">
-        <div class="m-input">"Привет, мир<span class="diff">,</span>"</div>
-        <div class="m-arrow">→</div>
-        <div class="m-box">SHA&#8209;256</div>
-        <div class="m-arrow">→</div>
-        <div class="m-hash" id="h2"><span style="color:var(--con-dim)">вычисляю…</span></div>
-      </div>
-      <div class="m-sep"></div>
-      <div class="m-stat" id="ava-stat">↑ отличие в 1 символе → посчитаю разницу хэшей…</div>
-    </div>
-
-    <div class="sac-box" style="margin-top:8px">
-      <div class="sac-label">СТРОГИЙ ЛАВИННЫЙ КРИТЕРИЙ (лавинный эффект)</div>
-      <div class="sac-formula">1 бит на входе изменился → каждый бит хэша меняется с вероятностью P = 0.5</div>
-      Злоумышленник не может играть в «горячо-холодно» — связь между исходником и хэшем полностью разорвана хаосом.
-    </div>
-
-    <div class="tryme" style="margin-top:8px">
-      <div class="tryme-label">// ПОПРОБУЙ САМ — введи любой текст</div>
-      <input type="text" id="tryme-inp" maxlength="100" spellcheck="false" placeholder="Введи произвольный текст…"/>
-      <div class="tryme-hash" id="tryme-hash"></div>
+  <!-- INPUT -->
+  <div class="inp-panel">
+    <div class="inp-eyebrow">// ВВЕДИ ФРАЗУ — МАШИНА ВЫДАСТ КОД ИЗ 64 СИМВОЛОВ</div>
+    <div class="inp-inner">
+      <textarea id="inp" maxlength="100" spellcheck="false"
+        placeholder="Введите произвольный текст…"></textarea>
+      <div class="cc" id="cc">0 / 100</div>
     </div>
   </div>
 
-  <!-- ══ 2. PIGEONHOLE ════════════════════════════════════════════════ -->
-  <div>
-    <div class="eyebrow" style="margin-bottom:8px">// 2. ПРИНЦИП ДИРИХЛЕ — ПОЧЕМУ КОЛЛИЗИИ НЕИЗБЕЖНЫ</div>
-
-    <div class="pigeon-wrap">
-      <div class="formula-display">H&nbsp;:&nbsp;{0,&thinsp;1}*&nbsp;→&nbsp;{0,&thinsp;1}<sup>n</sup></div>
-
-      <div class="pigeon-grid">
-        <!-- left: ∞ inputs -->
-        <div>
-          <div class="pi-col-label">{0,1}* — входные данные<br><em>«кролики» — бесконечно</em></div>
-          <div class="pi-items">
-            <div class="pi-item">"cat"</div>
-            <div class="pi-item">"Война и мир" (580 стр.)</div>
-            <div class="pi-item">"Half-Life 3.exe"</div>
-            <div class="pi-item">вся Википедия</div>
-            <div class="pi-inf">••• ∞</div>
-          </div>
-        </div>
-
-        <div class="pi-fn">H()</div>
-
-        <!-- right: finite outputs -->
-        <div>
-          <div class="pi-col-label">{0,1}<sup>256</sup> — хэши<br><em>«клетки» — конечно</em></div>
-          <div class="pi-items">
-            <div class="pi-hash">d0a1b3c9…</div>
-            <div class="pi-hash">a3b97f2e…</div>
-            <div class="pi-hash">f72cd841…</div>
-            <div class="pi-hash coll">a3b97f2e… ← КОЛЛИЗИЯ</div>
-          </div>
-          <div class="pi-size">2<sup>256</sup> клеток &gt; атомов во Вселенной</div>
-        </div>
-      </div>
-
-      <div class="coll-box">
-        <div class="coll-formula">H(x₁) = H(x₂)&nbsp; при&nbsp; x₁ ≠ x₂</div>
-        <div class="coll-note">Совпадения математически неизбежны — но спрятаны в 2²⁵⁶ вариантах так глубоко,&nbsp;что найти их за время жизни Вселенной невозможно</div>
-      </div>
-    </div>
+  <!-- HASH OUTPUT -->
+  <div class="console" id="con">
+    <div class="con-empty">// введите текст — хэш появится здесь</div>
   </div>
 
-  <!-- ══ 3. THREE PROPERTIES ═════════════════════════════════════════ -->
-  <div>
-    <div class="eyebrow" style="margin-bottom:8px">// 3. ТРИ СВОЙСТВА КРИПТОГРАФИЧЕСКОГО ХЭША</div>
+  <!-- STEPS -->
+  <div class="sep">ЭТАПЫ РАБОТЫ МАШИНЫ</div>
 
-    <div class="three-grid">
-
-      <div class="prop-card">
-        <div class="prop-n">СВОЙСТВО 01</div>
-        <div class="prop-title">СТОЙКОСТЬ К ПРООБРАЗУ</div>
-        <div class="prop-sub">«Фарш нельзя провернуть назад»</div>
-        <div class="prop-formula">y → x&nbsp;: H(x) = y</div>
-        <div class="prop-impossible">✗&nbsp;НЕВОЗМОЖНО</div>
-        <div class="prop-desc">Зная хэш y, нельзя восстановить x. При вычислении данные намеренно теряются — остатки от деления, побитовые операции.</div>
-      </div>
-
-      <div class="prop-card">
-        <div class="prop-n">СВОЙСТВО 02</div>
-        <div class="prop-title">СТОЙКОСТЬ КО 2-МУ ПРООБРАЗУ</div>
-        <div class="prop-sub">«Нельзя подделать конкретный договор»</div>
-        <div class="prop-formula">x₁ → x₂&nbsp;: H(x₁) = H(x₂)</div>
-        <div class="prop-impossible">✗&nbsp;НЕВОЗМОЖНО</div>
-        <div class="prop-desc">Зная оригинал x₁, нельзя создать поддельный x₂ с тем же хэшем — даже если искать именно под этот документ.</div>
-      </div>
-
-      <div class="prop-card">
-        <div class="prop-n">СВОЙСТВО 03</div>
-        <div class="prop-title">СТОЙКОСТЬ К КОЛЛИЗИЯМ</div>
-        <div class="prop-sub">«Парадокс дней рождения»</div>
-        <div class="prop-formula">∃ x₁,x₂&nbsp;: H(x₁) = H(x₂)</div>
-        <div class="prop-impossible">✗&nbsp;НЕВОЗМОЖНО</div>
-        <div class="prop-desc">Нельзя найти любые два документа с одинаковым хэшем. Из-за парадокса дней рождения хэш должен быть ≥ 256 бит.</div>
-      </div>
-
+  <!-- STEP 1: BYTES -->
+  <div class="card">
+    <div class="card-hdr" onclick="tog('s1')" tabindex="0" onkeydown="if(event.key==='Enter')tog('s1')">
+      <div class="card-n">1</div>
+      <div class="card-ttl">ПЕРЕВОД В БАЙТЫ (UTF-8)</div>
+      <span class="card-chev open" id="s1c">▶</span>
     </div>
+    <div class="card-body open" id="s1b"><div class="con-empty">введите текст…</div></div>
   </div>
 
-  <!-- ══ 4. MERKLE-DAMGÅRD ════════════════════════════════════════════ -->
-  <div>
-    <div class="eyebrow" style="margin-bottom:8px">// 4. АРХИТЕКТУРА МЕРКЛА-ДАМГОРДА — КОНВЕЙЕР-МЯСОРУБКА</div>
-
-    <div class="md-steps">
-
-      <!-- Step 1: Padding -->
-      <div class="md-step">
-        <div class="md-n">01</div>
-        <div>
-          <div class="md-title">ДОБИВКА (PADDING) — блоки по 512 бит = 64 байта</div>
-          <div class="pad-vis">
-            <div class="pad-seg pad-data">байты сообщения</div>
-            <div class="pad-seg pad-80">0x80<br>«1»</div>
-            <div class="pad-seg pad-zero">00…00<br>нули<br>«пенопласт»</div>
-            <div class="pad-seg pad-len">длина<br>64 бит<br>«бирка»</div>
-          </div>
-          <div class="pad-legend">
-            <span class="pl"><span class="pl-dot" style="background:rgba(91,155,213,.5)"></span>данные сообщения</span>
-            <span class="pl"><span class="pl-dot" style="background:var(--orange)"></span>бит «1»</span>
-            <span class="pl"><span class="pl-dot" style="background:var(--border)"></span>нули</span>
-            <span class="pl"><span class="pl-dot" style="background:rgba(192,57,43,.5)"></span>длина (8 байт)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2: Blocks -->
-      <div class="md-step">
-        <div class="md-n">02</div>
-        <div>
-          <div class="md-title">РАЗБИЕНИЕ НА БЛОКИ — M₁, M₂, … Mₙ</div>
-          <div class="blks-row">
-            <div class="blk">M₁<br><small>512 бит</small></div>
-            <div class="blk">M₂<br><small>512 бит</small></div>
-            <div class="blk">M₃<br><small>512 бит</small></div>
-            <div class="blk-dots">···</div>
-            <div class="blk">Mₙ<br><small>512 бит</small></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3: Chain -->
-      <div class="md-step">
-        <div class="md-n">03</div>
-        <div>
-          <div class="md-title">ЦЕПНАЯ ФУНКЦИЯ СЖАТИЯ f — «мясорубка»</div>
-          <div class="chain-outer">
-            <div class="chain">
-              <div class="c-iv">IV</div>
-              <div class="c-arr">→</div>
-              <div class="c-f-wrap">
-                <div class="c-f-box">f</div>
-                <div class="c-f-in">↑ M₁</div>
-              </div>
-              <div class="c-arr">→</div>
-              <div class="c-state">C₁</div>
-              <div class="c-arr">→</div>
-              <div class="c-f-wrap">
-                <div class="c-f-box">f</div>
-                <div class="c-f-in">↑ M₂</div>
-              </div>
-              <div class="c-arr">→</div>
-              <div class="c-state">C₂</div>
-              <div class="c-arr">→</div>
-              <div class="c-dots">…</div>
-              <div class="c-arr">→</div>
-              <div class="c-f-wrap">
-                <div class="c-f-box">f</div>
-                <div class="c-f-in">↑ Mₙ</div>
-              </div>
-              <div class="c-arr">→</div>
-              <div class="c-hash">HASH</div>
-            </div>
-          </div>
-
-          <div class="chain-formulas">
-            <div>C₁ = f(IV, M₁)</div>
-            <div>C₂ = f(C₁, M₂)</div>
-            <div>⋮</div>
-            <div class="final">Cₙ = f(Cₙ₋₁, Mₙ) = HASH</div>
-          </div>
-
-          <div class="f-inside">
-            <strong>Внутри f — 64 раунда:</strong> AND · OR · XOR · циклические сдвиги · сложение mod 2³²
-          </div>
-        </div>
-      </div>
-
+  <!-- STEP 2: PADDING / КОРОБКИ -->
+  <div class="card">
+    <div class="card-hdr" onclick="tog('s2')" tabindex="0" onkeydown="if(event.key==='Enter')tog('s2')">
+      <div class="card-n">2</div>
+      <div class="card-ttl">УПАКОВКА В КОРОБКИ (PADDING)</div>
+      <span class="card-chev" id="s2c">▶</span>
     </div>
+    <div class="card-body" id="s2b"><div class="con-empty">введите текст…</div></div>
   </div>
 
-  <!-- ══ 5. APPLICATIONS ══════════════════════════════════════════════ -->
-  <div>
-    <div class="eyebrow" style="margin-bottom:8px">// 5. ПРИМЕНЕНИЯ В IT</div>
-
-    <div class="apps-grid">
-
-      <div class="app-card">
-        <div class="app-title">🔐 ХРАНЕНИЕ ПАРОЛЕЙ</div>
-        <div class="app-formula">KDF(пароль + соль + перец)</div>
-        <div class="app-note"><span class="tag tag-b">соль</span> — уникальна для каждого, хранится в БД. Защита от радужных таблиц.</div>
-        <div class="app-note"><span class="tag tag-o">перец</span> — одна на всех, хранится на сервере (не в БД). Защита при краже базы.</div>
-        <div class="app-note">bcrypt / scrypt / Argon2 — намеренно медленные KDF</div>
-      </div>
-
-      <div class="app-card">
-        <div class="app-title">✍️ ЭЦП / JWT / HMAC</div>
-        <div class="app-formula">HMAC = H(ключ ‖ данные)</div>
-        <div class="app-note">При подписи документа шифруется его хэш, а не сам документ.</div>
-        <div class="app-note">JWT: третья часть токена — HMAC от заголовка и payload с секретным ключом.</div>
-      </div>
-
-      <div class="app-card">
-        <div class="app-title">📊 ХЭШ-ТАБЛИЦЫ</div>
-        <div class="app-formula">index = H(ключ) % N → O(1)</div>
-        <div class="app-note">dict (Python) · HashMap (Java) · объекты в JS</div>
-        <div class="app-note">Здесь важна скорость и равномерность, а не криптостойкость.</div>
-      </div>
-
-      <div class="app-card">
-        <div class="app-title">⛓️ БЛОКЧЕЙН + PROOF OF WORK</div>
-        <div class="app-formula">H(блок + Nonce) &lt; Target</div>
-        <div class="app-note">Каждый блок хранит хэш предыдущего — изменение одной записи рушит всю цепь (лавинный эффект).</div>
-        <div class="app-note">Майнинг: вслепую перебираем Nonce, пока хэш не начнётся с N нулей.</div>
-      </div>
-
+  <!-- STEP 3: CONVEYOR + MEATGRINDER -->
+  <div class="card">
+    <div class="card-hdr" onclick="tog('s3')" tabindex="0" onkeydown="if(event.key==='Enter')tog('s3')">
+      <div class="card-n">3</div>
+      <div class="card-ttl">КОНВЕЙЕР — ЦЕПНАЯ МЯСОРУБКА</div>
+      <span class="card-chev" id="s3c">▶</span>
     </div>
+    <div class="card-body" id="s3b"><div class="con-empty">введите текст…</div></div>
   </div>
 
-</div><!-- /page -->
+</div>
 
 <div class="statusbar">
-  SHA-256 // 256 бит // 2²⁵⁶ значений // Меркл-Дамгорд // 64 раунда сжатия
+  <span id="sb-algo">SHA-256</span>
+  <span id="sb-blocks">0 коробок</span>
+  <span id="sb-bits">0 бит</span>
 </div>
 
 <script>
-async function sha256hex(str) {
-  const data = new TextEncoder().encode(str);
-  const buf  = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+/* ── SHA-256 ── */
+const K=[
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2,
+];
+const H0=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+const rotr=(x,n)=>((x>>>n)|(x<<(32-n)))>>>0;
+const u32h=x=>(x>>>0).toString(16).padStart(8,'0');
+const byteh=b=>b.toString(16).padStart(2,'0').toUpperCase();
+
+function compute(str){
+  const msg=[...new TextEncoder().encode(str)];
+  const mlen=msg.length, blen=mlen*8;
+  const pad=[...msg,0x80];
+  while(pad.length%64!==56) pad.push(0);
+  for(let i=7;i>=0;i--) pad.push(Math.floor(blen/Math.pow(2,i*8))&0xff);
+
+  const nblocks=pad.length/64;
+
+  /* first block W + rounds for visualization */
+  const blk=pad.slice(0,64);
+  const W=[];
+  for(let i=0;i<16;i++) W.push(((blk[i*4]<<24)|(blk[i*4+1]<<16)|(blk[i*4+2]<<8)|blk[i*4+3])>>>0);
+  for(let i=16;i<64;i++){
+    const s0=rotr(W[i-15],7)^rotr(W[i-15],18)^(W[i-15]>>>3);
+    const s1=rotr(W[i-2],17)^rotr(W[i-2],19)^(W[i-2]>>>10);
+    W.push((W[i-16]+s0+W[i-7]+s1)>>>0);
+  }
+
+  /* full hash */
+  let[H1,H2,H3,H4,H5,H6,H7,H8]=[...H0];
+  /* track per-block output for chain visualization */
+  const chainStates=[];
+  for(let bk=0;bk<pad.length;bk+=64){
+    const Wf=[];
+    for(let i=0;i<16;i++) Wf.push(((pad[bk+i*4]<<24)|(pad[bk+i*4+1]<<16)|(pad[bk+i*4+2]<<8)|pad[bk+i*4+3])>>>0);
+    for(let i=16;i<64;i++){
+      const s0=rotr(Wf[i-15],7)^rotr(Wf[i-15],18)^(Wf[i-15]>>>3);
+      const s1=rotr(Wf[i-2],17)^rotr(Wf[i-2],19)^(Wf[i-2]>>>10);
+      Wf.push((Wf[i-16]+s0+Wf[i-7]+s1)>>>0);
+    }
+    let[a,b,c,d,e,f,g,h]=[H1,H2,H3,H4,H5,H6,H7,H8];
+    for(let i=0;i<64;i++){
+      const S1=rotr(e,6)^rotr(e,11)^rotr(e,25);
+      const ch=((e&f)^(~e&g))>>>0;
+      const t1=(h+S1+ch+K[i]+Wf[i])>>>0;
+      const S0=rotr(a,2)^rotr(a,13)^rotr(a,22);
+      const maj=((a&b)^(a&c)^(b&c))>>>0;
+      const t2=(S0+maj)>>>0;
+      h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+    }
+    H1=(H1+a)>>>0;H2=(H2+b)>>>0;H3=(H3+c)>>>0;H4=(H4+d)>>>0;
+    H5=(H5+e)>>>0;H6=(H6+f)>>>0;H7=(H7+g)>>>0;H8=(H8+h)>>>0;
+    chainStates.push([H1,H2,H3,H4,H5,H6,H7,H8]);
+  }
+  const hash=[H1,H2,H3,H4,H5,H6,H7,H8].map(u32h).join('');
+  return{msg,mlen,pad,hash,nblocks,chainStates};
 }
 
-async function initMachine() {
-  const s1 = 'Привет, мир!';
-  const s2 = 'Привет, мир,';
-  const [h1, h2] = await Promise.all([sha256hex(s1), sha256hex(s2)]);
+/* ── UI ── */
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  const diff = new Set();
-  for (let i = 0; i < 64; i++) if (h1[i] !== h2[i]) diff.add(i);
-
-  document.getElementById('h1').innerHTML =
-    [...h1].map(c => `<span class="hc-same">${c}</span>`).join('');
-
-  document.getElementById('h2').innerHTML =
-    [...h2].map((c, i) =>
-      diff.has(i)
-        ? `<span class="hc-changed">${c}</span>`
-        : `<span class="hc-same">${c}</span>`
-    ).join('');
-
-  const n = diff.size;
-  document.getElementById('ava-stat').innerHTML =
-    `↑ разница: 1 символ → изменилось <strong>${n}/64</strong> символов хэша (${Math.round(n/64*100)}%)`;
+function plB(n){
+  if(n%10===1&&n%100!==11)return`${n} байт`;
+  if([2,3,4].includes(n%10)&&![12,13,14].includes(n%100))return`${n} байта`;
+  return`${n} байт`;
+}
+function plK(n){
+  if(n%10===1&&n%100!==11)return`${n} коробка`;
+  if([2,3,4].includes(n%10)&&![12,13,14].includes(n%100))return`${n} коробки`;
+  return`${n} коробок`;
 }
 
-let tmr = null;
-document.getElementById('tryme-inp').addEventListener('input', function () {
-  clearTimeout(tmr);
-  tmr = setTimeout(async () => {
-    const v = this.value;
-    const el = document.getElementById('tryme-hash');
-    if (!v) { el.textContent = ''; return; }
-    el.textContent = await sha256hex(v);
-  }, 80);
-});
+let prevHash='', litTid=null;
 
-initMachine();
-document.getElementById('tryme-inp').value = 'Привет, мир!';
-document.getElementById('tryme-inp').dispatchEvent(new Event('input'));
+function update(){
+  const txt=document.getElementById('inp').value;
+  const n=txt.length;
+  const ccEl=document.getElementById('cc');
+  ccEl.textContent=`${n} / 100`;
+  ccEl.className='cc'+(n>85?' warn':'');
+
+  const con=document.getElementById('con');
+  if(!txt){
+    prevHash='';
+    con.innerHTML='<div class="con-empty">// введите текст — хэш появится здесь</div>';
+    ['s1b','s2b','s3b'].forEach(id=>document.getElementById(id).innerHTML='<div class="con-empty">введите текст…</div>');
+    document.getElementById('sb-blocks').textContent='0 коробок';
+    document.getElementById('sb-bits').textContent='0 бит';
+    return;
+  }
+
+  const{msg,mlen,pad,hash,nblocks,chainStates}=compute(txt);
+
+  /* avalanche diff */
+  const lit=new Set();
+  for(let i=0;i<64;i++) if(i>=prevHash.length||hash[i]!==prevHash[i]) lit.add(i);
+  prevHash=hash;
+
+  /* ruler */
+  const MARKS=[0,8,16,24,32,40,48,56];
+  const ruler=start=>Array.from({length:32},(_,i)=>{
+    const g=start+i;
+    const m=MARKS.find(m=>m===g);
+    const ch=m!==undefined?String(m).padStart(2,'0')[g===m?0:1]:' ';
+    return`<span>${ch}</span>`;
+  }).join('');
+  const hashRow=start=>[...hash.slice(start,start+32)].map((c,i)=>{
+    const g=start+i;
+    return`<span class="hc${lit.has(g)?' lit':''}" id="hc${g}">${c}</span>`;
+  }).join('');
+
+  const shortTxt=txt.length>32?txt.slice(0,32)+'…':txt;
+  const chg=lit.size;
+
+  con.innerHTML=`
+<div><span class="con-prompt">&gt;</span> <span class="con-fn">sha256</span><span class="con-paren">(</span><span class="con-str">"${esc(shortTxt)}"</span><span class="con-paren">)</span></div>
+<div class="dump">
+  <div class="dump-ruler">${ruler(0)}</div>
+  <div class="dump-row">${hashRow(0)}</div>
+  <div class="dump-ruler" style="margin-top:3px">${ruler(32)}</div>
+  <div class="dump-row">${hashRow(32)}</div>
+</div>
+<div class="ava">изменилось: <strong>${chg}/64</strong>${chg>0&&chg<64?' — связь между текстом и кодом разорвана хаосом':chg===64?' — изменилось всё':chg===0?' — код не изменился':''}</div>`;
+
+  if(litTid) clearTimeout(litTid);
+  litTid=setTimeout(()=>lit.forEach(i=>{const e=document.getElementById('hc'+i);if(e)e.classList.remove('lit')}),750);
+
+  document.getElementById('sb-blocks').textContent=plK(nblocks);
+  document.getElementById('sb-bits').textContent=`${mlen*8} бит = ${plB(mlen)}`;
+
+  renderS1(msg,mlen,txt);
+  renderS2(pad,mlen,nblocks>1);
+  renderS3(nblocks,chainStates,mlen);
+}
+
+function renderS1(msg,mlen,txt){
+  const el=document.getElementById('s1b');
+  const bytes=msg.map(b=>`<span class="bt bt-m">${byteh(b)}</span>`).join('');
+  const shortTxt=txt.length>48?txt.slice(0,48)+'…':txt;
+  el.innerHTML=`
+<div class="card-desc">"${esc(shortTxt)}" → <em>${plB(mlen)} = ${mlen*8} бит</em><br>
+Машина работает с байтами, а не символами. Кириллица — 2 байта на символ, ASCII — 1 байт.</div>
+<div class="brow">${bytes||'<span class="con-empty">(пусто)</span>'}</div>`;
+}
+
+function renderS2(pad,mlen,multi){
+  const el=document.getElementById('s2b');
+  const lenStart=multi?9999:56;
+  const bytes=pad.slice(0,64).map((b,i)=>{
+    let c='bt-z';
+    if(i<mlen) c='bt-m';
+    else if(i===mlen&&mlen<64) c='bt-p';
+    else if(i>=lenStart) c='bt-l';
+    return`<span class="bt ${c}">${byteh(b)}</span>`;
+  }).join('');
+  el.innerHTML=`
+${multi?`<div class="notice">Сообщение занимает ${pad.length/64} коробки — показана только первая.</div>`:''}
+<div class="card-desc">Последняя коробка почти всегда заполнена не до конца. Добавляем <em>пенопласт</em>: сначала бит «1» (0x80), затем нули. В самый конец кладём <em>бирку</em> — точную длину исходного текста (64 бит). Коробка ровно <em>512 бит = 64 байта</em>.</div>
+<div class="brow">${bytes}</div>
+<div class="legend">
+  <div class="leg"><div class="leg-d" style="background:rgba(91,155,213,.5)"></div>байты сообщения</div>
+  <div class="leg"><div class="leg-d" style="background:rgba(232,137,11,.5)"></div>0x80 — начало пенопласта</div>
+  <div class="leg"><div class="leg-d" style="background:var(--border)"></div>нули (пенопласт)</div>
+  <div class="leg"><div class="leg-d" style="background:rgba(201,124,52,.5)"></div>бирка (длина, 8 байт)</div>
+</div>`;
+}
+
+function renderS3(nblocks,chainStates,mlen){
+  const el=document.getElementById('s3b');
+
+  /* build chain HTML */
+  /* blocks: M₁, M₂, ... up to nblocks */
+  let chainHTML=`<div class="chain">`;
+  chainHTML+=`<div class="c-iv">стартовая<br>закваска<br><small>IV</small></div>`;
+
+  const MAX_SHOW=Math.min(nblocks,4);
+  for(let i=0;i<MAX_SHOW;i++){
+    const ci=chainStates[i];
+    const shortHash=u32h(ci[0]).slice(0,4)+'…';
+    const isLast=(i===nblocks-1);
+    chainHTML+=`<div class="c-arr">→</div>`;
+    chainHTML+=`<div class="c-f"><div class="c-f-box">f</div><div class="c-f-lbl">↑ M${i+1}</div></div>`;
+    chainHTML+=`<div class="c-arr">→</div>`;
+    if(isLast){
+      chainHTML+=`<div class="c-hash-box">HASH</div>`;
+    } else {
+      chainHTML+=`<div class="c-farsh">${shortHash}<small>фарш C${i+1}</small></div>`;
+    }
+  }
+  if(nblocks>4){
+    chainHTML+=`<div class="c-arr">→</div><div class="c-dots">…</div>`;
+    chainHTML+=`<div class="c-arr">→</div>`;
+    chainHTML+=`<div class="c-f"><div class="c-f-box">f</div><div class="c-f-lbl">↑ M${nblocks}</div></div>`;
+    chainHTML+=`<div class="c-arr">→</div>`;
+    chainHTML+=`<div class="c-hash-box">HASH</div>`;
+  }
+  chainHTML+=`</div>`;
+
+  /* formulas */
+  let formulas=`<div class="chain-formulas">`;
+  formulas+=`<div>C₁ = f(IV, M₁)</div>`;
+  if(nblocks>1) formulas+=`<div>C₂ = f(C₁, M₂)</div>`;
+  if(nblocks>2) formulas+=`<div>⋮</div>`;
+  if(nblocks===1){
+    formulas+=`<div class="last">C₁ = f(IV, M₁) = HASH</div>`;
+  } else {
+    formulas+=`<div class="last">C${nblocks} = f(C${nblocks-1}, M${nblocks}) = HASH</div>`;
+  }
+  formulas+=`</div>`;
+
+  el.innerHTML=`
+${nblocks>1?`<div class="notice">Конвейер из ${nblocks} коробок. Каждый следующий шаг использует фарш предыдущего.</div>`:''}
+<div class="card-desc">В мясорубку всегда загружают <em>две вещи одновременно</em>: очередную коробку и фарш из предыдущего шага. Для первой коробки фарша ещё нет — берут стартовую закваску (IV). Последний фарш из конвейера и есть итоговый хэш.</div>
+<div class="conveyor">${chainHTML}</div>
+${formulas}
+<div class="f-inside">
+  <strong>Внутри каждой мясорубки f — 64 раунда:</strong> побитовые AND · OR · XOR, циклические сдвиги, сложение по модулю 2³²
+</div>`;
+}
+
+function tog(id){
+  const b=document.getElementById(id+'b');
+  const c=document.getElementById(id+'c');
+  const open=b.classList.toggle('open');
+  c.classList.toggle('open',open);
+}
+
+document.getElementById('inp').addEventListener('input',update);
+document.getElementById('inp').value='Привет, мир!';
+update();
 </script>
 </body>
 </html>
