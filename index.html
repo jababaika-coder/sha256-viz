@@ -6,19 +6,19 @@
 <title>SHA-256 // Машина-преобразователь</title>
 <style>
 :root {
-  --bg:       #f2f3f5;
-  --surface:  #ffffff;
-  --border:   #d6d8da;
-  --text:     #1a1a1a;
-  --muted:    #6b6e72;
-  --orange:   #e8890b;
-  --orange-lo:rgba(232,137,11,.11);
-  --blue:     #5b9bd5;
-  --green:    #5d8a50;
-  --red:      #c97c34;
-  --console:  #1c1c1e;
-  --con-fg:   #a9b7c6;
-  --con-dim:  #50555e;
+  --bg:        #f2f3f5;
+  --surface:   #ffffff;
+  --border:    #d6d8da;
+  --text:      #1a1a1a;
+  --muted:     #6b6e72;
+  --orange:    #e8890b;
+  --orange-lo: rgba(232,137,11,.11);
+  --blue:      #5b9bd5;
+  --green:     #5d8a50;
+  --red:       #c97c34;
+  --console:   #1c1c1e;
+  --con-fg:    #a9b7c6;
+  --con-dim:   #50555e;
 }
 @media(prefers-color-scheme:dark){:root{
   --bg:#18191b;--surface:#222426;--border:#36383b;
@@ -31,15 +31,15 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:'Cascadia Code','JetBrains Mono','Fira Mono',Consolas,Monaco,monospace;
-  background:var(--bg); color:var(--text);
-  font-size:13px; line-height:1.5; padding-bottom:32px;
+  background:var(--bg);color:var(--text);
+  font-size:13px;line-height:1.5;padding-bottom:32px;
 }
 
 /* ── TOOLBAR ── */
 .toolbar{
-  background:var(--console); border-bottom:2px solid var(--orange);
-  padding:8px 16px; display:flex; align-items:center; gap:10px;
-  position:sticky; top:0; z-index:20;
+  background:var(--console);border-bottom:2px solid var(--orange);
+  padding:8px 16px;display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:20;
 }
 .tb-pip{width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0}
 .tb-name{font-size:12px;letter-spacing:.1em;color:var(--con-fg)}
@@ -56,14 +56,15 @@ body{
 textarea{
   width:100%;font-family:inherit;font-size:13px;
   background:var(--bg);border:1px solid var(--border);color:var(--text);
-  padding:8px 54px 8px 10px;resize:none;height:66px;outline:none;
+  padding:8px 120px 8px 10px;resize:none;height:66px;outline:none;
   transition:border-color .15s;
 }
 textarea:focus{border-color:var(--orange)}
 textarea::placeholder{color:var(--muted);opacity:.55}
 .cc{
   position:absolute;right:16px;bottom:13px;
-  font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;transition:color .2s;
+  font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;
+  transition:color .2s;white-space:nowrap;
 }
 .cc.warn{color:var(--orange)}
 
@@ -77,10 +78,7 @@ textarea::placeholder{color:var(--muted);opacity:.55}
 .con-str{color:var(--green)}
 .con-paren{color:var(--con-dim)}
 .dump{margin-top:10px}
-.dump-ruler{
-  display:flex;font-size:9px;color:var(--con-dim);
-  font-variant-numeric:tabular-nums;margin-bottom:1px;user-select:none;
-}
+.dump-ruler{display:flex;font-size:9px;color:var(--con-dim);font-variant-numeric:tabular-nums;margin-bottom:1px;user-select:none}
 .dump-ruler span{display:inline-block;width:1ch;text-align:center}
 .dump-row{display:flex;font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .hc{display:inline-block;width:1ch;color:var(--con-fg);transition:color .3s,text-shadow .3s}
@@ -109,6 +107,7 @@ textarea::placeholder{color:var(--muted);opacity:.55}
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .card-ttl{font-size:11px;letter-spacing:.07em;color:var(--text)}
+.card-sub{font-size:10px;color:var(--muted);margin-left:4px}
 .card-chev{margin-left:auto;font-size:9px;color:var(--muted);transition:transform .18s;display:inline-block}
 .card-chev.open{transform:rotate(90deg)}
 .card-body{padding:12px;display:none}
@@ -118,66 +117,85 @@ textarea::placeholder{color:var(--muted);opacity:.55}
 
 /* ── BYTES ── */
 .brow{display:flex;flex-wrap:wrap;gap:3px}
-.bt{
-  font-size:11px;padding:2px 4px;min-width:24px;
-  text-align:center;font-weight:600;
-  font-variant-numeric:tabular-nums;border-radius:2px;
-}
+.bt{font-size:11px;padding:2px 4px;min-width:24px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums;border-radius:2px}
 .bt-m{background:rgba(91,155,213,.15);color:var(--blue)}
 .bt-p{background:rgba(232,137,11,.18);color:var(--orange)}
 .bt-z{color:var(--con-dim);border:1px solid var(--border)}
 .bt-l{background:rgba(201,124,52,.15);color:var(--red)}
-
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 .leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
 .leg-d{width:8px;height:8px;border-radius:1px}
 
-.notice{
-  font-size:11px;border-left:3px solid var(--orange);
-  background:var(--orange-lo);padding:5px 10px;color:var(--text);margin-bottom:10px;
+/* ── BLOCK SECTIONS (step 2) ── */
+.blk-section{margin-bottom:10px}
+.blk-section:last-of-type{margin-bottom:0}
+.blk-label{
+  font-size:10px;letter-spacing:.08em;color:var(--orange);
+  margin-bottom:5px;font-weight:600;
+}
+.blk-divider{height:1px;background:var(--border);margin:10px 0}
+
+/* ── MEATGRINDER STEPS (step 3) ── */
+.mgs-step{
+  border:1px solid var(--border);
+  padding:10px 12px;margin-bottom:8px;
+  background:var(--bg);
+}
+.mgs-step:last-child{margin-bottom:0}
+.mgs-last{border-color:var(--orange);background:var(--orange-lo)}
+.mgs-n{font-size:10px;letter-spacing:.1em;color:var(--orange);margin-bottom:10px;font-weight:600}
+
+.mgs-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+
+.mgs-block{
+  display:flex;flex-direction:column;align-items:center;
+  padding:8px 12px;gap:2px;flex-shrink:0;
+}
+.mbl-iv   {background:var(--con-dim)}
+.mbl-farsh{background:var(--surface);border:1px solid var(--border)}
+.mbl-box  {background:rgba(91,155,213,.12);border:1px solid rgba(91,155,213,.4)}
+.mbl-out  {background:var(--surface);border:1px solid var(--border)}
+.mbl-hash {background:var(--orange)}
+
+.mgs-lbl-main{font-size:11px;font-weight:700}
+.mbl-iv    .mgs-lbl-main{color:#fff}
+.mbl-farsh .mgs-lbl-main{color:var(--blue)}
+.mbl-box   .mgs-lbl-main{color:var(--blue)}
+.mbl-out   .mgs-lbl-main{color:var(--blue)}
+.mbl-hash  .mgs-lbl-main{color:#fff}
+
+.mgs-lbl-sub{font-size:9px;color:var(--muted);font-variant-numeric:tabular-nums;word-break:break-all;max-width:100px;text-align:center}
+.mbl-iv   .mgs-lbl-sub{color:rgba(255,255,255,.5)}
+.mbl-hash .mgs-lbl-sub{color:rgba(255,255,255,.7)}
+
+.mgs-plus{font-size:18px;color:var(--muted);flex-shrink:0}
+.mgs-arr {font-size:16px;color:var(--muted);flex-shrink:0}
+.mgs-fbox{
+  background:var(--orange);color:#fff;
+  font-size:16px;font-weight:700;
+  padding:9px 22px;flex-shrink:0;
 }
 
-/* ── CONVEYOR (step 3) ── */
-.conveyor{overflow-x:auto;padding:4px 0}
-.chain{display:flex;align-items:center;min-width:max-content;gap:0}
-.c-iv{
-  background:var(--con-dim);color:#fff;
-  font-size:10px;font-weight:700;letter-spacing:.04em;
-  padding:8px 10px;flex-shrink:0;
-  display:flex;flex-direction:column;align-items:center;gap:1px;
-}
-.c-iv small{font-size:8px;opacity:.7;font-weight:400}
-.c-arr{color:var(--muted);padding:0 5px;font-size:15px;flex-shrink:0}
-.c-f{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-.c-f-box{
-  background:var(--orange);color:#fff;
-  font-size:13px;font-weight:700;padding:7px 18px;
-}
-.c-f-lbl{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.03em}
-.c-farsh{
-  background:var(--surface);border:1px solid var(--border);
-  font-size:10px;color:var(--blue);font-weight:600;
-  padding:6px 9px;flex-shrink:0;font-variant-numeric:tabular-nums;
-  display:flex;flex-direction:column;align-items:center;gap:1px;
-}
-.c-farsh small{font-size:8px;color:var(--muted);font-weight:400}
-.c-dots{color:var(--muted);font-size:18px;padding:0 8px;flex-shrink:0}
-.c-hash-box{
-  background:var(--orange);color:#fff;
-  font-size:11px;font-weight:700;letter-spacing:.05em;padding:8px 14px;flex-shrink:0;
-}
+/* Conveyor boxes */
+.mgs-conv{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.mgs-boxes{display:flex;gap:4px;flex-wrap:wrap}
+.mbox{font-size:10px;padding:3px 7px;border:1px solid;font-weight:700;letter-spacing:.03em;flex-shrink:0}
+.mbox-done{color:var(--con-dim);border-color:var(--border);opacity:.4;text-decoration:line-through}
+.mbox-cur {color:var(--orange);border-color:var(--orange);background:var(--orange-lo)}
+.mbox-wait{color:var(--blue);border-color:rgba(91,155,213,.5);background:rgba(91,155,213,.07)}
+.mgs-remain{font-size:10px;color:var(--muted)}
+.mgs-remain.ok{color:var(--green);font-weight:700}
 
-.chain-formulas{
-  margin-top:10px;font-size:11px;color:var(--blue);
-  font-variant-numeric:tabular-nums;
-  border-left:2px solid var(--orange);padding-left:10px;
-  display:flex;flex-direction:column;gap:2px;
-}
-.chain-formulas .last{color:var(--orange);font-weight:700}
+/* Result hex */
+.mgs-result{font-size:10px;border-left:2px solid var(--border);padding-left:8px;word-break:break-all}
+.mgs-last .mgs-result{border-color:var(--orange)}
+.mgs-rlbl{display:block;color:var(--muted);margin-bottom:2px;letter-spacing:.04em}
+.mgs-rval{color:var(--blue);font-variant-numeric:tabular-nums}
+.mgs-last .mgs-rval{color:var(--orange);font-weight:700}
 
 .f-inside{
-  margin-top:8px;padding:6px 10px;
-  background:var(--bg);border-left:2px solid var(--con-dim);
+  margin-top:10px;padding:6px 10px;
+  background:var(--surface);border-left:2px solid var(--con-dim);
   font-size:10px;color:var(--muted);
 }
 .f-inside strong{color:var(--text)}
@@ -201,25 +219,20 @@ textarea::placeholder{color:var(--muted);opacity:.55}
 
 <div class="wrap">
 
-  <!-- INPUT -->
   <div class="inp-panel">
     <div class="inp-eyebrow">// ВВЕДИ ФРАЗУ — МАШИНА ВЫДАСТ КОД ИЗ 64 СИМВОЛОВ</div>
     <div class="inp-inner">
-      <textarea id="inp" maxlength="100" spellcheck="false"
-        placeholder="Введите произвольный текст…"></textarea>
-      <div class="cc" id="cc">0 / 100</div>
+      <textarea id="inp" spellcheck="false" placeholder="Введите произвольный текст…"></textarea>
+      <div class="cc" id="cc">0 байт · 0 кор.</div>
     </div>
   </div>
 
-  <!-- HASH OUTPUT -->
   <div class="console" id="con">
     <div class="con-empty">// введите текст — хэш появится здесь</div>
   </div>
 
-  <!-- STEPS -->
   <div class="sep">ЭТАПЫ РАБОТЫ МАШИНЫ</div>
 
-  <!-- STEP 1: BYTES -->
   <div class="card">
     <div class="card-hdr" onclick="tog('s1')" tabindex="0" onkeydown="if(event.key==='Enter')tog('s1')">
       <div class="card-n">1</div>
@@ -229,21 +242,19 @@ textarea::placeholder{color:var(--muted);opacity:.55}
     <div class="card-body open" id="s1b"><div class="con-empty">введите текст…</div></div>
   </div>
 
-  <!-- STEP 2: PADDING / КОРОБКИ -->
   <div class="card">
     <div class="card-hdr" onclick="tog('s2')" tabindex="0" onkeydown="if(event.key==='Enter')tog('s2')">
       <div class="card-n">2</div>
-      <div class="card-ttl">УПАКОВКА В КОРОБКИ (PADDING)</div>
+      <div class="card-ttl">УПАКОВКА В КОРОБКИ <span class="card-sub" id="s2-sub"></span></div>
       <span class="card-chev" id="s2c">▶</span>
     </div>
     <div class="card-body" id="s2b"><div class="con-empty">введите текст…</div></div>
   </div>
 
-  <!-- STEP 3: CONVEYOR + MEATGRINDER -->
   <div class="card">
     <div class="card-hdr" onclick="tog('s3')" tabindex="0" onkeydown="if(event.key==='Enter')tog('s3')">
       <div class="card-n">3</div>
-      <div class="card-ttl">КОНВЕЙЕР — ЦЕПНАЯ МЯСОРУБКА</div>
+      <div class="card-ttl">ЦЕПНАЯ МЯСОРУБКА <span class="card-sub" id="s3-sub"></span></div>
       <span class="card-chev" id="s3c">▶</span>
     </div>
     <div class="card-body" id="s3b"><div class="con-empty">введите текст…</div></div>
@@ -252,13 +263,13 @@ textarea::placeholder{color:var(--muted);opacity:.55}
 </div>
 
 <div class="statusbar">
-  <span id="sb-algo">SHA-256</span>
+  <span>SHA-256</span>
   <span id="sb-blocks">0 коробок</span>
   <span id="sb-bits">0 бит</span>
 </div>
 
 <script>
-/* ── SHA-256 ── */
+/* ── SHA-256 ─────────────────────────────────────────────────────── */
 const K=[
   0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
   0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
@@ -280,26 +291,14 @@ function compute(str){
   const pad=[...msg,0x80];
   while(pad.length%64!==56) pad.push(0);
   for(let i=7;i>=0;i--) pad.push(Math.floor(blen/Math.pow(2,i*8))&0xff);
-
   const nblocks=pad.length/64;
 
-  /* first block W + rounds for visualization */
-  const blk=pad.slice(0,64);
-  const W=[];
-  for(let i=0;i<16;i++) W.push(((blk[i*4]<<24)|(blk[i*4+1]<<16)|(blk[i*4+2]<<8)|blk[i*4+3])>>>0);
-  for(let i=16;i<64;i++){
-    const s0=rotr(W[i-15],7)^rotr(W[i-15],18)^(W[i-15]>>>3);
-    const s1=rotr(W[i-2],17)^rotr(W[i-2],19)^(W[i-2]>>>10);
-    W.push((W[i-16]+s0+W[i-7]+s1)>>>0);
-  }
-
-  /* full hash */
   let[H1,H2,H3,H4,H5,H6,H7,H8]=[...H0];
-  /* track per-block output for chain visualization */
   const chainStates=[];
   for(let bk=0;bk<pad.length;bk+=64){
     const Wf=[];
-    for(let i=0;i<16;i++) Wf.push(((pad[bk+i*4]<<24)|(pad[bk+i*4+1]<<16)|(pad[bk+i*4+2]<<8)|pad[bk+i*4+3])>>>0);
+    for(let i=0;i<16;i++)
+      Wf.push(((pad[bk+i*4]<<24)|(pad[bk+i*4+1]<<16)|(pad[bk+i*4+2]<<8)|pad[bk+i*4+3])>>>0);
     for(let i=16;i<64;i++){
       const s0=rotr(Wf[i-15],7)^rotr(Wf[i-15],18)^(Wf[i-15]>>>3);
       const s1=rotr(Wf[i-2],17)^rotr(Wf[i-2],19)^(Wf[i-2]>>>10);
@@ -323,7 +322,33 @@ function compute(str){
   return{msg,mlen,pad,hash,nblocks,chainStates};
 }
 
-/* ── UI ── */
+/* ── INPUT LIMIT (max 3 blocks) ─────────────────────────────────── */
+const MAX_BLOCKS=3;
+const enc=new TextEncoder();
+
+function blockCount(str){
+  const n=enc.encode(str).length;
+  return Math.ceil((n+9)/64);
+}
+
+const inp=document.getElementById('inp');
+inp.addEventListener('input',function(){
+  let txt=this.value;
+  // trim from end until ≤ MAX_BLOCKS
+  while(blockCount(txt)>MAX_BLOCKS && txt.length>0)
+    txt=txt.slice(0,-1);
+  if(txt!==this.value) this.value=txt;
+
+  const bytes=enc.encode(txt).length;
+  const blk=blockCount(txt);
+  const ccEl=document.getElementById('cc');
+  ccEl.textContent=`${bytes} байт · ${blk}/${MAX_BLOCKS} кор.`;
+  ccEl.className='cc'+(blk>=MAX_BLOCKS?' warn':'');
+
+  update();
+});
+
+/* ── HELPERS ─────────────────────────────────────────────────────── */
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 function plB(n){
@@ -337,20 +362,19 @@ function plK(n){
   return`${n} коробок`;
 }
 
-let prevHash='', litTid=null;
+/* ── MAIN UPDATE ─────────────────────────────────────────────────── */
+let prevHash='',litTid=null;
 
 function update(){
-  const txt=document.getElementById('inp').value;
-  const n=txt.length;
-  const ccEl=document.getElementById('cc');
-  ccEl.textContent=`${n} / 100`;
-  ccEl.className='cc'+(n>85?' warn':'');
-
+  const txt=inp.value;
   const con=document.getElementById('con');
+
   if(!txt){
     prevHash='';
     con.innerHTML='<div class="con-empty">// введите текст — хэш появится здесь</div>';
     ['s1b','s2b','s3b'].forEach(id=>document.getElementById(id).innerHTML='<div class="con-empty">введите текст…</div>');
+    document.getElementById('s2-sub').textContent='';
+    document.getElementById('s3-sub').textContent='';
     document.getElementById('sb-blocks').textContent='0 коробок';
     document.getElementById('sb-bits').textContent='0 бит';
     return;
@@ -358,16 +382,15 @@ function update(){
 
   const{msg,mlen,pad,hash,nblocks,chainStates}=compute(txt);
 
-  /* avalanche diff */
+  // Avalanche diff
   const lit=new Set();
   for(let i=0;i<64;i++) if(i>=prevHash.length||hash[i]!==prevHash[i]) lit.add(i);
   prevHash=hash;
 
-  /* ruler */
+  // Hash display
   const MARKS=[0,8,16,24,32,40,48,56];
   const ruler=start=>Array.from({length:32},(_,i)=>{
-    const g=start+i;
-    const m=MARKS.find(m=>m===g);
+    const g=start+i,m=MARKS.find(m=>m===g);
     const ch=m!==undefined?String(m).padStart(2,'0')[g===m?0:1]:' ';
     return`<span>${ch}</span>`;
   }).join('');
@@ -378,7 +401,6 @@ function update(){
 
   const shortTxt=txt.length>32?txt.slice(0,32)+'…':txt;
   const chg=lit.size;
-
   con.innerHTML=`
 <div><span class="con-prompt">&gt;</span> <span class="con-fn">sha256</span><span class="con-paren">(</span><span class="con-str">"${esc(shortTxt)}"</span><span class="con-paren">)</span></div>
 <div class="dump">
@@ -387,114 +409,168 @@ function update(){
   <div class="dump-ruler" style="margin-top:3px">${ruler(32)}</div>
   <div class="dump-row">${hashRow(32)}</div>
 </div>
-<div class="ava">изменилось: <strong>${chg}/64</strong>${chg>0&&chg<64?' — связь между текстом и кодом разорвана хаосом':chg===64?' — изменилось всё':chg===0?' — код не изменился':''}</div>`;
+<div class="ava">изменилось: <strong>${chg}/64</strong>${
+  chg>0&&chg<64?' — связь между текстом и кодом разорвана хаосом':
+  chg===64?' — изменилось всё':chg===0?' — код не изменился':''
+}</div>`;
 
   if(litTid) clearTimeout(litTid);
   litTid=setTimeout(()=>lit.forEach(i=>{const e=document.getElementById('hc'+i);if(e)e.classList.remove('lit')}),750);
 
   document.getElementById('sb-blocks').textContent=plK(nblocks);
   document.getElementById('sb-bits').textContent=`${mlen*8} бит = ${plB(mlen)}`;
+  document.getElementById('s2-sub').textContent=`(${nblocks})`;
+  document.getElementById('s3-sub').textContent=`(${nblocks} шагов)`;
 
   renderS1(msg,mlen,txt);
-  renderS2(pad,mlen,nblocks>1);
-  renderS3(nblocks,chainStates,mlen);
+  renderS2(pad,mlen,nblocks);
+  renderS3(nblocks,chainStates);
 }
 
+/* ── STEP 1: BYTES ───────────────────────────────────────────────── */
 function renderS1(msg,mlen,txt){
   const el=document.getElementById('s1b');
   const bytes=msg.map(b=>`<span class="bt bt-m">${byteh(b)}</span>`).join('');
   const shortTxt=txt.length>48?txt.slice(0,48)+'…':txt;
   el.innerHTML=`
 <div class="card-desc">"${esc(shortTxt)}" → <em>${plB(mlen)} = ${mlen*8} бит</em><br>
-Машина работает с байтами, а не символами. Кириллица — 2 байта на символ, ASCII — 1 байт.</div>
+Машина работает с байтами. Кириллица — 2 байта на символ, ASCII — 1 байт.</div>
 <div class="brow">${bytes||'<span class="con-empty">(пусто)</span>'}</div>`;
 }
 
-function renderS2(pad,mlen,multi){
+/* ── STEP 2: ALL BOXES ───────────────────────────────────────────── */
+function renderS2(pad,mlen,nblocks){
   const el=document.getElementById('s2b');
-  const lenStart=multi?9999:56;
-  const bytes=pad.slice(0,64).map((b,i)=>{
-    let c='bt-z';
-    if(i<mlen) c='bt-m';
-    else if(i===mlen&&mlen<64) c='bt-p';
-    else if(i>=lenStart) c='bt-l';
-    return`<span class="bt ${c}">${byteh(b)}</span>`;
-  }).join('');
-  el.innerHTML=`
-${multi?`<div class="notice">Сообщение занимает ${pad.length/64} коробки — показана только первая.</div>`:''}
-<div class="card-desc">Последняя коробка почти всегда заполнена не до конца. Добавляем <em>пенопласт</em>: сначала бит «1» (0x80), затем нули. В самый конец кладём <em>бирку</em> — точную длину исходного текста (64 бит). Коробка ровно <em>512 бит = 64 байта</em>.</div>
+  const lenStart=pad.length-8; // last 8 bytes always = бирка
+
+  let html=`<div class="card-desc">Коробка всегда ровно <em>512 бит = 64 байта</em>. Последняя коробка почти никогда не заполнена полностью — досыпаем <em>пенопласт</em>: бит «1» (0x80), затем нули. В самый конец — <em>бирка</em>: точная длина исходного текста.</div>`;
+
+  for(let blk=0;blk<nblocks;blk++){
+    const start=blk*64;
+    const isLast=(blk===nblocks-1);
+    const bytes=pad.slice(start,start+64).map((b,li)=>{
+      const gi=start+li;
+      let c='bt-z';
+      if(gi<mlen) c='bt-m';
+      else if(gi===mlen) c='bt-p';
+      else if(gi>=lenStart) c='bt-l';
+      return`<span class="bt ${c}">${byteh(b)}</span>`;
+    }).join('');
+
+    if(blk>0) html+=`<div class="blk-divider"></div>`;
+    html+=`<div class="blk-section">
+<div class="blk-label">КОРОБКА M${blk+1} · байты ${start}–${start+63}</div>
 <div class="brow">${bytes}</div>
-<div class="legend">
+</div>`;
+  }
+
+  html+=`<div class="legend" style="margin-top:10px">
   <div class="leg"><div class="leg-d" style="background:rgba(91,155,213,.5)"></div>байты сообщения</div>
   <div class="leg"><div class="leg-d" style="background:rgba(232,137,11,.5)"></div>0x80 — начало пенопласта</div>
   <div class="leg"><div class="leg-d" style="background:var(--border)"></div>нули (пенопласт)</div>
   <div class="leg"><div class="leg-d" style="background:rgba(201,124,52,.5)"></div>бирка (длина, 8 байт)</div>
 </div>`;
+
+  el.innerHTML=html;
 }
 
-function renderS3(nblocks,chainStates,mlen){
+/* ── STEP 3: MEATGRINDER CHAIN ───────────────────────────────────── */
+function renderS3(nblocks,chainStates){
   const el=document.getElementById('s3b');
 
-  /* build chain HTML */
-  /* blocks: M₁, M₂, ... up to nblocks */
-  let chainHTML=`<div class="chain">`;
-  chainHTML+=`<div class="c-iv">стартовая<br>закваска<br><small>IV</small></div>`;
+  let html=`<div class="card-desc">В мясорубку всегда загружают <em>ровно две вещи</em>: очередную коробку и фарш из предыдущего шага. Для первой коробки фарша ещё нет — берут <em>стартовую закваску (IV)</em>. Последний фарш и есть итоговый хэш.</div>`;
 
-  const MAX_SHOW=Math.min(nblocks,4);
-  for(let i=0;i<MAX_SHOW;i++){
-    const ci=chainStates[i];
-    const shortHash=u32h(ci[0]).slice(0,4)+'…';
+  for(let i=0;i<nblocks;i++){
+    const isFirst=(i===0);
     const isLast=(i===nblocks-1);
-    chainHTML+=`<div class="c-arr">→</div>`;
-    chainHTML+=`<div class="c-f"><div class="c-f-box">f</div><div class="c-f-lbl">↑ M${i+1}</div></div>`;
-    chainHTML+=`<div class="c-arr">→</div>`;
-    if(isLast){
-      chainHTML+=`<div class="c-hash-box">HASH</div>`;
+    const ci=chainStates[i];
+    const ciHex=ci.map(u32h).join(' ');
+
+    // Left block (закваска или фарш)
+    let leftClass, leftMain, leftSub;
+    if(isFirst){
+      leftClass='mbl-iv';
+      leftMain='закваска';
+      leftSub='IV';
     } else {
-      chainHTML+=`<div class="c-farsh">${shortHash}<small>фарш C${i+1}</small></div>`;
+      const prev=chainStates[i-1];
+      leftClass='mbl-farsh';
+      leftMain=`фарш C${i}`;
+      leftSub=u32h(prev[0])+'…';
     }
-  }
-  if(nblocks>4){
-    chainHTML+=`<div class="c-arr">→</div><div class="c-dots">…</div>`;
-    chainHTML+=`<div class="c-arr">→</div>`;
-    chainHTML+=`<div class="c-f"><div class="c-f-box">f</div><div class="c-f-lbl">↑ M${nblocks}</div></div>`;
-    chainHTML+=`<div class="c-arr">→</div>`;
-    chainHTML+=`<div class="c-hash-box">HASH</div>`;
-  }
-  chainHTML+=`</div>`;
 
-  /* formulas */
-  let formulas=`<div class="chain-formulas">`;
-  formulas+=`<div>C₁ = f(IV, M₁)</div>`;
-  if(nblocks>1) formulas+=`<div>C₂ = f(C₁, M₂)</div>`;
-  if(nblocks>2) formulas+=`<div>⋮</div>`;
-  if(nblocks===1){
-    formulas+=`<div class="last">C₁ = f(IV, M₁) = HASH</div>`;
-  } else {
-    formulas+=`<div class="last">C${nblocks} = f(C${nblocks-1}, M${nblocks}) = HASH</div>`;
-  }
-  formulas+=`</div>`;
+    // Output block
+    let outClass, outMain, outSub;
+    if(isLast){
+      outClass='mbl-hash';
+      outMain='HASH';
+      outSub=u32h(ci[0])+'…';
+    } else {
+      outClass='mbl-out';
+      outMain=`фарш C${i+1}`;
+      outSub=u32h(ci[0])+'…';
+    }
 
-  el.innerHTML=`
-${nblocks>1?`<div class="notice">Конвейер из ${nblocks} коробок. Каждый следующий шаг использует фарш предыдущего.</div>`:''}
-<div class="card-desc">В мясорубку всегда загружают <em>две вещи одновременно</em>: очередную коробку и фарш из предыдущего шага. Для первой коробки фарша ещё нет — берут стартовую закваску (IV). Последний фарш из конвейера и есть итоговый хэш.</div>
-<div class="conveyor">${chainHTML}</div>
-${formulas}
-<div class="f-inside">
-  <strong>Внутри каждой мясорубки f — 64 раунда:</strong> побитовые AND · OR · XOR, циклические сдвиги, сложение по модулю 2³²
+    // Conveyor boxes row
+    let boxes='';
+    for(let j=0;j<nblocks;j++){
+      let cls='mbox-wait';
+      if(j<i)  cls='mbox-done';
+      if(j===i) cls='mbox-cur';
+      boxes+=`<span class="mbox ${cls}">M${j+1}</span>`;
+    }
+    const remaining=nblocks-i-1;
+    const remainNote=remaining>0
+      ? `<span class="mgs-remain">ждут на конвейере: <strong>${plK(remaining)}</strong></span>`
+      : `<span class="mgs-remain ok">конвейер пуст — это итоговый хэш ✓</span>`;
+
+    html+=`
+<div class="mgs-step${isLast?' mgs-last':''}">
+  <div class="mgs-n">ШАГ ${i+1} ИЗ ${nblocks}</div>
+  <div class="mgs-row">
+    <div class="mgs-block ${leftClass}">
+      <div class="mgs-lbl-main">${leftMain}</div>
+      <div class="mgs-lbl-sub">${leftSub}</div>
+    </div>
+    <span class="mgs-plus">+</span>
+    <div class="mgs-block mbl-box">
+      <div class="mgs-lbl-main">M${i+1}</div>
+      <div class="mgs-lbl-sub">512 бит</div>
+    </div>
+    <span class="mgs-arr">→</span>
+    <div class="mgs-fbox">f</div>
+    <span class="mgs-arr">→</span>
+    <div class="mgs-block ${outClass}">
+      <div class="mgs-lbl-main">${outMain}</div>
+      <div class="mgs-lbl-sub">${outSub}</div>
+    </div>
+  </div>
+  <div class="mgs-conv">
+    <div class="mgs-boxes">${boxes}</div>
+    ${remainNote}
+  </div>
+  <div class="mgs-result">
+    <span class="mgs-rlbl">${isLast?'// итоговый хэш:':'// фарш C'+(i+1)+':'}</span>
+    <span class="mgs-rval">${ciHex}</span>
+  </div>
 </div>`;
+  }
+
+  html+=`<div class="f-inside"><strong>Внутри каждой мясорубки f — 64 раунда:</strong> AND · OR · XOR · циклические сдвиги · сложение по модулю 2³²</div>`;
+  el.innerHTML=html;
 }
 
+/* ── TOGGLE ──────────────────────────────────────────────────────── */
 function tog(id){
   const b=document.getElementById(id+'b');
   const c=document.getElementById(id+'c');
-  const open=b.classList.toggle('open');
-  c.classList.toggle('open',open);
+  b.classList.toggle('open');
+  c.classList.toggle('open',b.classList.contains('open'));
 }
 
-document.getElementById('inp').addEventListener('input',update);
-document.getElementById('inp').value='Привет, мир!';
-update();
+/* ── INIT ────────────────────────────────────────────────────────── */
+inp.value='Привет, мир!';
+inp.dispatchEvent(new Event('input'));
 </script>
 </body>
 </html>
