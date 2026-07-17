@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BVA // Граничные значения</title>
+<style>
+:root {
+  --bg:       #f2f3f5;
+  --surface:  #ffffff;
+  --border:   #d6d8da;
+  --text:     #1a1a1a;
+  --muted:    #6b6e72;
+  --orange:   #e8890b;
+  --olo:      rgba(232,137,11,.11);
+  --green:    #4a7c41;
+  --glo:      rgba(74,124,65,.10);
+  --red:      #b83c36;
+  --rlo:      rgba(184,60,54,.10);
+  --console:  #1c1c1e;
+  --con-fg:   #a9b7c6;
+  --con-dim:  #50555e;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#18191b;--surface:#222426;--border:#36383b;
+  --text:#d4d4d4;--muted:#7a7d82;
+  --green:#6aab73;--glo:rgba(106,171,115,.12);
+  --red:#e06c75;--rlo:rgba(224,108,117,.12);
+  --console:#0d0e10;--con-dim:#42464f;
+}}
+:root[data-theme=dark]{
+  --bg:#18191b;--surface:#222426;--border:#36383b;
+  --text:#d4d4d4;--muted:#7a7d82;
+  --green:#6aab73;--glo:rgba(106,171,115,.12);
+  --red:#e06c75;--rlo:rgba(224,108,117,.12);
+  --console:#0d0e10;--con-dim:#42464f;
+}
+:root[data-theme=light]{
+  --bg:#f2f3f5;--surface:#ffffff;--border:#d6d8da;
+  --text:#1a1a1a;--muted:#6b6e72;
+  --green:#4a7c41;--glo:rgba(74,124,65,.10);
+  --red:#b83c36;--rlo:rgba(184,60,54,.10);
+  --console:#1c1c1e;--con-dim:#50555e;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Cascadia Code','JetBrains Mono','Fira Mono',Consolas,Monaco,monospace;
+  background:var(--bg);color:var(--text);
+  font-size:13px;line-height:1.5;padding-bottom:32px;
+}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  background:var(--console);border-bottom:2px solid var(--orange);
+  padding:8px 16px;display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:20;
+}
+.tb-pip{width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0}
+.tb-name{font-size:12px;letter-spacing:.1em;color:var(--con-fg)}
+.tb-name strong{color:var(--orange)}
+.tb-tag{margin-left:auto;font-size:10px;letter-spacing:.09em;color:var(--con-dim);border:1px solid var(--con-dim);padding:1px 8px;white-space:nowrap}
+
+/* ── META ── */
+.meta{
+  background:var(--console);
+  font-size:10px;letter-spacing:.06em;color:var(--con-dim);
+  padding:3px 16px 5px;border-bottom:1px dashed var(--con-dim);
+}
+
+/* ── WRAP ── */
+.wrap{max-width:700px;margin:0 auto;padding:16px 16px 0;display:flex;flex-direction:column;gap:14px}
+
+/* ── SECTION TITLE ── */
+.sec-ttl{
+  font-size:10px;letter-spacing:.12em;color:var(--orange);font-weight:700;
+}
+
+/* ── CONTROLS ── */
+.controls{
+  background:var(--surface);border:1px solid var(--border);
+  padding:14px;display:flex;gap:14px;flex-wrap:wrap;
+}
+.ctrl{display:flex;flex-direction:column;gap:5px}
+.ctrl-n{min-width:140px;flex:1}
+.ctrl-c{flex:3;min-width:220px}
+.ctrl-lbl{font-size:10px;letter-spacing:.09em;color:var(--orange);font-weight:700}
+.ctrl-inp,.ctrl-sel{
+  font-family:inherit;font-size:13px;
+  background:var(--bg);border:1px solid var(--border);
+  color:var(--text);padding:8px 10px;outline:none;width:100%;
+  transition:border-color .15s;
+  -webkit-appearance:none;appearance:none;
+}
+.ctrl-inp:focus,.ctrl-sel:focus{border-color:var(--orange)}
+
+/* force option readability (best-effort, browser-dependent) */
+.ctrl-sel option{background:var(--surface);color:var(--text)}
+
+/* ── CARDS ── */
+.cards{display:flex;gap:12px;flex-wrap:wrap}
+.card{
+  flex:1;min-width:110px;
+  background:var(--surface);border:1px solid var(--border);
+  padding:18px 12px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  transition:border-color .2s,background .2s;
+}
+.card-boundary{border-color:var(--orange);background:var(--olo)}
+
+.card-lbl{font-size:10px;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.card-boundary .card-lbl{color:var(--orange)}
+
+.card-val{
+  font-size:32px;font-weight:700;color:var(--orange);
+  font-variant-numeric:tabular-nums;min-width:3ch;
+}
+
+.badge{
+  font-size:10px;letter-spacing:.12em;font-weight:700;
+  padding:4px 10px;border:1px solid;min-width:100px;text-align:center;
+  transition:color .2s,border-color .2s,background .2s;
+}
+.badge-ok {color:var(--green);border-color:var(--green);background:var(--glo)}
+.badge-err{color:var(--red);border-color:var(--red);background:var(--rlo)}
+
+/* ── DESCRIPTION ── */
+.desc{
+  border-left:3px solid var(--green);background:var(--glo);
+  padding:10px 14px;font-size:11px;line-height:1.7;
+  transition:border-color .2s,background .2s;
+}
+.desc strong{color:var(--orange)}
+.desc em{font-style:normal;font-weight:700}
+
+/* ── STATUS BAR ── */
+.statusbar{
+  background:var(--orange);color:#fff;
+  font-size:10px;letter-spacing:.08em;
+  padding:3px 16px;display:flex;gap:20px;flex-wrap:wrap;
+  position:sticky;bottom:0;margin-top:16px;
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="tb-pip"></div>
+  <div class="tb-name"><strong>BVA</strong> // ГРАНИЧНЫЕ ЗНАЧЕНИЯ</div>
+  <div class="tb-tag" id="tb-tag">AWAITING_PARAMETERS</div>
+</div>
+<div class="meta">Location: BVA_Core // Mode: Interactive // Status: <span id="meta-status">ожидание</span></div>
+
+<div class="wrap">
+
+  <div class="sec-ttl">ЗАДАЙТЕ ГРАНИЦУ И УСЛОВИЕ ИЗ ТЗ</div>
+
+  <div class="controls">
+    <div class="ctrl ctrl-n">
+      <div class="ctrl-lbl">// ГРАНИЦА (N)</div>
+      <input class="ctrl-inp" type="number" id="inp-n" value="50"/>
+    </div>
+    <div class="ctrl ctrl-c">
+      <div class="ctrl-lbl">// УСЛОВИЕ В ТЗ</div>
+      <select class="ctrl-sel" id="inp-cond">
+        <option value="less">Меньше / менее / строго до (&lt;)</option>
+        <option value="less_eq">Не более / максимум / до включительно (&lt;=)</option>
+        <option value="greater">Больше / более / свыше (&gt;)</option>
+        <option value="greater_eq">Не менее / минимум / от включительно (&gt;=)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card" id="card-m">
+      <div class="card-lbl">N − 1</div>
+      <div class="card-val" id="val-m">49</div>
+      <div class="badge" id="badge-m"></div>
+    </div>
+    <div class="card card-boundary" id="card-n">
+      <div class="card-lbl">ГРАНИЦА N</div>
+      <div class="card-val" id="val-n">50</div>
+      <div class="badge" id="badge-n"></div>
+    </div>
+    <div class="card" id="card-p">
+      <div class="card-lbl">N + 1</div>
+      <div class="card-val" id="val-p">51</div>
+      <div class="badge" id="badge-p"></div>
+    </div>
+  </div>
+
+  <div class="desc" id="desc"></div>
+
+</div>
+
+<div class="statusbar">
+  <span>BVA</span>
+  <span id="sb-n">N = 50</span>
+  <span id="sb-cond"></span>
+</div>
+
+<script>
+const SYM={less:'<',less_eq:'≤',greater:'>',greater_eq:'≥'};
+
+function setBadge(id,ok){
+  const el=document.getElementById(id);
+  el.textContent=ok?'[ УСПЕХ ]':'[ ОШИБКА ]';
+  el.className='badge '+(ok?'badge-ok':'badge-err');
+}
+
+function update(){
+  const nStr=document.getElementById('inp-n').value;
+  const n=nStr!==''?parseInt(nStr,10):0;
+  const c=document.getElementById('inp-cond').value;
+
+  document.getElementById('val-m').textContent=n-1;
+  document.getElementById('val-n').textContent=n;
+  document.getElementById('val-p').textContent=n+1;
+
+  let okM,okN,okP,analysis;
+  switch(c){
+    case 'less':
+      okM=true; okN=false; okP=false;
+      analysis=`Исключительная граница (&lt;). <em>N = первое запрещённое значение.</em> N−1 проходит проверку, N и N+1 — нет.`;
+      break;
+    case 'less_eq':
+      okM=true; okN=true; okP=false;
+      analysis=`Включительная граница (&lt;=). <em>N = последнее допустимое значение.</em> N−1 и N проходят проверку, N+1 — нет.`;
+      break;
+    case 'greater':
+      okM=false; okN=false; okP=true;
+      analysis=`Исключительная граница (&gt;). <em>N = последнее запрещённое значение.</em> N+1 проходит проверку, N−1 и N — нет.`;
+      break;
+    case 'greater_eq':
+      okM=false; okN=true; okP=true;
+      analysis=`Включительная граница (&gt;=). <em>N = первое допустимое значение.</em> N и N+1 проходят проверку, N−1 — нет.`;
+      break;
+  }
+
+  setBadge('badge-m',okM);
+  setBadge('badge-n',okN);
+  setBadge('badge-p',okP);
+
+  document.getElementById('desc').innerHTML=`<strong>// Анализ:</strong> ${analysis}`;
+  document.getElementById('sb-n').textContent=`N = ${n}`;
+  document.getElementById('sb-cond').textContent=`условие: ${SYM[c]} N`;
+  document.getElementById('meta-status').textContent=`N=${n} · ${SYM[c]} N`;
+  document.getElementById('tb-tag').textContent=`N=${n} ${SYM[c]}`;
+}
+
+document.getElementById('inp-n').addEventListener('input',update);
+document.getElementById('inp-cond').addEventListener('change',update);
+update();
+</script>
+</body>
+</html>
