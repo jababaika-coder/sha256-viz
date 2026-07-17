@@ -245,8 +245,7 @@ update();
   function applyTheme(dark){root.setAttribute('data-theme',dark?'dark':'light');}
   applyTheme(false); // light by default
   new MutationObserver(()=>{
-    const dr=root.getAttribute('data-darkreader-scheme');
-    if(dr) applyTheme(dr==='dark');
+    applyTheme(root.getAttribute('data-darkreader-scheme')==='dark');
   }).observe(root,{attributes:true,attributeFilter:['data-darkreader-scheme']});
 })();
 </script>
