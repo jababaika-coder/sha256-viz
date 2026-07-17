@@ -21,26 +21,12 @@
   --con-fg:   #a9b7c6;
   --con-dim:  #50555e;
 }
-@media(prefers-color-scheme:dark){:root{
-  --bg:#18191b;--surface:#222426;--border:#36383b;
-  --text:#d4d4d4;--muted:#7a7d82;
-  --green:#6aab73;--glo:rgba(106,171,115,.12);
-  --red:#e06c75;--rlo:rgba(224,108,117,.12);
-  --console:#0d0e10;--con-dim:#42464f;
-}}
 :root[data-theme=dark]{
   --bg:#18191b;--surface:#222426;--border:#36383b;
   --text:#d4d4d4;--muted:#7a7d82;
   --green:#6aab73;--glo:rgba(106,171,115,.12);
   --red:#e06c75;--rlo:rgba(224,108,117,.12);
   --console:#0d0e10;--con-dim:#42464f;
-}
-:root[data-theme=light]{
-  --bg:#f2f3f5;--surface:#ffffff;--border:#d6d8da;
-  --text:#1a1a1a;--muted:#6b6e72;
-  --green:#4a7c41;--glo:rgba(74,124,65,.10);
-  --red:#b83c36;--rlo:rgba(184,60,54,.10);
-  --console:#1c1c1e;--con-dim:#50555e;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -60,6 +46,13 @@ body{
 .tb-name{font-size:12px;letter-spacing:.1em;color:var(--con-fg)}
 .tb-name strong{color:var(--orange)}
 .tb-tag{margin-left:auto;font-size:10px;letter-spacing:.09em;color:var(--con-dim);border:1px solid var(--con-dim);padding:1px 8px;white-space:nowrap}
+.tb-toggle{
+  font-family:inherit;font-size:10px;letter-spacing:.09em;
+  color:var(--con-dim);border:1px solid var(--con-dim);
+  background:transparent;padding:1px 8px;cursor:pointer;
+  transition:color .15s,border-color .15s;flex-shrink:0;
+}
+.tb-toggle:hover{color:var(--orange);border-color:var(--orange)}
 
 /* ── META ── */
 .meta{
@@ -148,6 +141,7 @@ body{
   <div class="tb-pip"></div>
   <div class="tb-name"><strong>BVA</strong> // ГРАНИЧНЫЕ ЗНАЧЕНИЯ</div>
   <div class="tb-tag" id="tb-tag">AWAITING_PARAMETERS</div>
+  <button class="tb-toggle" id="theme-btn" title="переключить тему">☽ DARK</button>
 </div>
 <div class="meta">Location: BVA_Core // Mode: Interactive // Status: <span id="meta-status">ожидание</span></div>
 
@@ -251,6 +245,26 @@ function update(){
 document.getElementById('inp-n').addEventListener('input',update);
 document.getElementById('inp-cond').addEventListener('change',update);
 update();
+
+/* ── THEME ── */
+(function(){
+  const root=document.documentElement;
+  function applyTheme(dark){
+    root.setAttribute('data-theme',dark?'dark':'light');
+    const btn=document.getElementById('theme-btn');
+    if(btn) btn.textContent=dark?'☀ LIGHT':'☽ DARK';
+    try{localStorage.setItem('bva-theme',dark?'dark':'light')}catch(e){}
+  }
+  const saved=localStorage.getItem('bva-theme');
+  applyTheme(saved==='dark'); // light by default
+  document.getElementById('theme-btn').addEventListener('click',function(){
+    applyTheme(root.getAttribute('data-theme')!=='dark');
+  });
+  new MutationObserver(()=>{
+    const dr=root.getAttribute('data-darkreader-scheme');
+    if(dr) applyTheme(dr==='dark');
+  }).observe(root,{attributes:true,attributeFilter:['data-darkreader-scheme']});
+})();
 </script>
 </body>
 </html>
